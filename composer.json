@@ -1,0 +1,17 @@
+{
+    "name": "viewflex/forex",
+    "description": "A Laravel package providing live currency exchange rates, with caching.",
+    "keywords": [
+        "forex", "exchange rate", "currency", "conversion", "money"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Adam Sailor",
+            "email": "viewflex.contact@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "Viewflex\\Forex\\": "src/" }
+    }
+}
