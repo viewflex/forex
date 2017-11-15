@@ -50,12 +50,21 @@ class Forex
         if (Cache::has($conversion))
             $rate = Cache::get($conversion);
         else {
-            $content = trim($this->request('http://download.finance.yahoo.com/d/quotes.csv?s='.$conversion.'=X&f=l1'));
+            $response = $this->request('https://api.fixer.io/latest?base='.$source.'&symbols='.$target);
 
-            if($content == 'N/A')
-                throw new ForexException('Exchange rate not found.');
+            $content = json_decode($response, true);
 
-            if(($rate = floatval($content)) == 0)
+            if (
+                array_key_exists('rates', $content)
+                && array_key_exists($target, $content['rates'])
+                && $content['rates'][$target]
+            ) {
+                $rate = floatval($content['rates'][$target]);
+            } else {
+                throw new ForexException('Error retrieving exchange rate.');
+            }
+
+            if($rate <= 0)
                 throw new ForexException('Error retrieving exchange rate.');
 
             if(! Cache::add($conversion, $rate, Carbon::now()->addMinutes(1440)))
