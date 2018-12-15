@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) <Adam Sailor>
+Copyright (c) Adam Sailor
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
