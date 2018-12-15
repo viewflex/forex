@@ -1,13 +1,21 @@
-<?php namespace Viewflex\Forex;
+<?php
 
-use Cache;
+namespace Viewflex\Forex;
+
+
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * This class provides live exchange rates, optionally cached.
  */
 class Forex
 {
+    /**
+     * @var \Viewflex\Forex\ForexProviderInterface;
+     */
+    protected $service;
+
     /**
      * The complete list of ISO currency codes.
      *
@@ -39,6 +47,15 @@ class Forex
      */
     public function getRate($source, $target)
     {
+
+        $provider = env('FOREX_PROVIDER');
+        $url = env('FOREX_PROVIDER_URL');
+        $key = env('FOREX_PROVIDER_KEY', '');
+        $cache_minutes = intval(env('FOREX_CACHE_MINUTES', 1));
+
+        if ((! $provider) || (! $url))
+            throw new ForexException('Invalid exchange rate provider configuration.');
+
         if(! in_array($source, $this->currency_codes))
             throw new ForexException('Invalid source currency code.');
 
@@ -46,53 +63,30 @@ class Forex
             throw new ForexException('Invalid target currency code.');
 
         $conversion = $source.$target;
-
-        if (Cache::has($conversion))
+        
+        if (($cache_minutes > 0) && (Cache::has($conversion)))
             $rate = Cache::get($conversion);
         else {
-            $response = $this->request('https://api.fixer.io/latest?base='.$source.'&symbols='.$target);
 
-            $content = json_decode($response, true);
+            $provider_class = 'Viewflex\Forex\Providers\\' . $provider;
 
-            if (
-                array_key_exists('rates', $content)
-                && array_key_exists($target, $content['rates'])
-                && $content['rates'][$target]
-            ) {
-                $rate = floatval($content['rates'][$target]);
-            } else {
-                throw new ForexException('Error retrieving exchange rate.');
-            }
+            if (! class_exists($provider_class))
+                throw new ForexException("\"" . $provider . "\" is not a supported provider.");
 
+            $this->service = new $provider_class($url, $key, $cache_minutes);
+            $rate = $this->service->getRate($source, $target);
+            
             if($rate <= 0)
                 throw new ForexException('Error retrieving exchange rate.');
 
-            if(! Cache::add($conversion, $rate, Carbon::now()->addMinutes(1440)))
-                throw new ForexException('Unable to add exchange rate to cache.');
+            if ($cache_minutes > 0) {
+                if(! Cache::add($conversion, $rate, Carbon::now()->addMinutes($cache_minutes)))
+                    throw new ForexException('Unable to add exchange rate to cache.');
+            }
+            
         }
 
         return $rate;
-    }
-
-    /**
-     * Query a URL and get the response.
-     *
-     * @param $url
-     * @return mixed
-     */
-    private function request($url)
-    {
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 2);
-        curl_setopt($ch, CURLOPT_MAXCONNECTS, 2);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        return $response;
     }
 
 }

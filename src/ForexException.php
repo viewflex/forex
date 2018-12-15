@@ -1,7 +1,9 @@
-<?php namespace Viewflex\Forex;
+<?php
 
-class ForexException extends \Exception {
+namespace Viewflex\Forex;
 
+
+class ForexException extends \Exception
+{
     //
-
 }

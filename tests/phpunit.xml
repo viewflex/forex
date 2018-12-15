@@ -10,14 +10,9 @@
          syntaxCheck="false">
     <testsuites>
         <testsuite name="Forex">
-            <file>tests/ForexTest.php</file>
+            <file>Forex/ForexTest.php</file>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist>
-            <directory>./src/</directory>
-        </whitelist>
-    </filter>
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="CACHE_DRIVER" value="array"/>
