@@ -51,7 +51,7 @@ class Forex
         $provider = env('FOREX_PROVIDER');
         $url = env('FOREX_PROVIDER_URL');
         $key = env('FOREX_PROVIDER_KEY', '');
-        $cache_minutes = intval(env('FOREX_CACHE_MINUTES', 1));
+        $cache_minutes = intval(env('FOREX_CACHE_MINUTES', 720));
 
         if ((! $provider) || (! $url))
             throw new ForexException('Invalid exchange rate provider configuration.');
