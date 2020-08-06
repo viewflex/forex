@@ -65,7 +65,7 @@ class Forex
         $conversion = $source.$target;
         
         if (($cache_minutes > 0) && (Cache::has($conversion)))
-            $rate = Cache::get($conversion);
+            $rate = (float) Cache::get($conversion);
         else {
 
             $provider_class = 'Viewflex\Forex\Providers\\' . $provider;
